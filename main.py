@@ -3,8 +3,9 @@ import json
 import httpx
 import fastapi_poe as fp
 import google.generativeai as genai
+from fastapi import Request, Response
 
-# Render Environment Variable မှ Key ကိုယူခြင်း
+# Render Environment Variable
 API_KEY = os.environ.get("GEMINI_API_KEY")
 
 class TwinVoiceBot(fp.PoeBot):
@@ -13,25 +14,23 @@ class TwinVoiceBot(fp.PoeBot):
         attachments = request.query[-1].attachments
         
         if not API_KEY:
-            yield fp.PartialResponse(text="❌ Error: GEMINI_API_KEY is missing in Render settings.")
+            yield fp.PartialResponse(text="❌ Error: GEMINI_API_KEY Missing.")
             return
 
         try:
             genai.configure(api_key=API_KEY)
             model = genai.GenerativeModel('gemini-1.5-flash-latest')
             
-            # ၁။ အခုတင်လိုက်တဲ့ voice_map_summary.json ဖိုင်ကို ဖတ်ခြင်း
-            try:
+            # DNA File ကို ဖတ်ခြင်း
+            dna_context = ""
+            if os.path.exists('voice_map_summary.json'):
                 with open('voice_map_summary.json', 'r') as f:
                     voice_dna = json.load(f)
-                dna_context = f"You must use this Voice Style DNA to respond: {json.dumps(voice_dna)}"
-            except Exception as dna_error:
-                dna_context = "Style Context: Natural, human-like Burmese/English conversationalist."
+                dna_context = f"Voice DNA Info: {json.dumps(voice_dna)}\n"
 
-            # ၂။ Prompt အား စာသားနှင့် ဖိုင်များ ပေါင်းစပ်တည်ဆောက်ခြင်း
-            prompt_parts = [f"{dna_context}\n\nUser Message: {user_message}"]
+            prompt_parts = [f"{dna_context}Respond naturally to: {user_message}"]
             
-            # ဓာတ်ပုံ သို့မဟုတ် ဖိုင်များပါလာပါက Vision စနစ်ဖြင့် ဖတ်ခြင်း
+            # File Attachments စနစ်
             if attachments:
                 async with httpx.AsyncClient() as client:
                     for attachment in attachments:
@@ -42,27 +41,23 @@ class TwinVoiceBot(fp.PoeBot):
                                 "data": resp.content
                             })
 
-            # ၃။ AI မှ အဖြေထုတ်ပေးခြင်း
-            # Safety ပိတ်ထားပြီး တိုက်ရိုက်အဖြေထုတ်ပေးမည့် Full System
-            safety_settings = [
-                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
-            ]
-
-            response = model.generate_content(prompt_parts, safety_settings=safety_settings)
+            # AI မှ အဖြေတောင်းခြင်း
+            response = model.generate_content(prompt_parts)
             
             if response and response.text:
                 yield fp.PartialResponse(text=response.text)
             else:
-                yield fp.PartialResponse(text="⚠️ AI သည် အကြောင်းအရာကို နားလည်သော်လည်း အဖြေထုတ်ရန် ငြင်းဆိုထားပါသည်။")
+                yield fp.PartialResponse(text="⚠️ AI returned no content.")
 
         except Exception as e:
+            # Error တက်ရင်တောင် 'done' event မပျောက်အောင် စာသားပြန်ပို့ပေးသည်
             yield fp.PartialResponse(text=f"⚠️ System Error: {str(e)}")
 
-    async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
-        return fp.SettingsResponse(server_bot_dependencies={})
-
+# HEAD request (405 Error) ကို ဖြေရှင်းရန် Custom Handler
 bot = TwinVoiceBot()
 app = fp.make_app(bot, allow_without_key=True)
+
+@app.head("/")
+@app.get("/")
+async def index_handler():
+    return Response("Bot is running", status_code=200)
