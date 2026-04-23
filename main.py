@@ -4,7 +4,7 @@ import fastapi_poe as fp
 import google.generativeai as genai
 
 # Render Environment ထဲက Key ကို တိုက်ရိုက်ယူခြင်း
-api_key = os.environ.get("AIzaSyBzxxQRB9lTRuN_XOOFAQQhXVKXroVWwlY")
+api_key = os.environ.get("AIzaSyAsRMTcbwdpWLnXcBhKlrWCUktU9zggkSs")
 
 class TwinVoiceBot(fp.PoeBot):
     async def get_response(self, request: fp.QueryRequest):
