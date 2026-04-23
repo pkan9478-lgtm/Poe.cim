@@ -1,3 +1,3 @@
-flask
+fastapi-poe
 google-generativeai
-gunicorn
+uvicorn
