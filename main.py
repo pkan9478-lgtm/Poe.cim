@@ -23,7 +23,7 @@ class TwinVoiceBot(fp.PoeBot):
             
             # ဆရာအလိုရှိသော နောက်ဆုံးပေါ် Gemini 2.0 Flash ကို အသုံးပြုထားပါသည်
             # Model Name ပြောင်းလဲမှုကို ခံနိုင်ရည်ရှိအောင် Stable နာမည်ကို သုံးထားသည်
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             
             # ၂။ Voice DNA (JSON) ကို စနစ်တကျ ဖတ်ခြင်း
             dna_context = ""
