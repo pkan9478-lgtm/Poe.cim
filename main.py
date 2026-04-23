@@ -21,8 +21,9 @@ class TwinVoiceBot(fp.PoeBot):
             # ၁။ API Configuration
             genai.configure(api_key=API_KEY)
             
-            # 404 Error မတက်စေရန် Stable ဖြစ်သော Model Name ကို သုံးထားသည်
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # ဆရာအလိုရှိသော နောက်ဆုံးပေါ် Gemini 2.0 Flash ကို အသုံးပြုထားပါသည်
+            # Model Name ပြောင်းလဲမှုကို ခံနိုင်ရည်ရှိအောင် Stable နာမည်ကို သုံးထားသည်
+            model = genai.GenerativeModel('gemini-2.0-flash-exp')
             
             # ၂။ Voice DNA (JSON) ကို စနစ်တကျ ဖတ်ခြင်း
             dna_context = ""
@@ -36,7 +37,7 @@ class TwinVoiceBot(fp.PoeBot):
 
             prompt_parts = [f"{dna_context}User Message: {user_message}"]
             
-            # ၃။ Vision System (File Reading)
+            # ၃။ Vision System (ဓာတ်ပုံနှင့် ဖိုင်ဖတ်ခြင်း)
             if attachments:
                 async with httpx.AsyncClient() as client:
                     for attachment in attachments:
@@ -60,18 +61,18 @@ class TwinVoiceBot(fp.PoeBot):
             if response and response.text:
                 yield fp.PartialResponse(text=response.text)
             else:
-                yield fp.PartialResponse(text="⚠️ AI Engine မှ အဖြေထုတ်ပေးရန် ငြင်းဆိုထားပါသည်။")
+                yield fp.PartialResponse(text="⚠️ AI Engine မှ အဖြေထုတ်ပေးရန် ငြင်းဆိုထားပါသည်။ (Safety Filter)")
 
         except Exception as e:
-            # ၅၀၂ သို့မဟုတ် Done Event Error မတက်အောင် စာသားဖြင့် ပြန်ပို့ပေးသည်
+            # ၅၀၂ သို့မဟုတ် 'Done' Event Error မတက်အောင် စာသားဖြင့် ပြန်ပို့ပေးသည်
             yield fp.PartialResponse(text=f"⚠️ System Error: {str(e)}")
 
 # Poe App အသက်သွင်းခြင်း
 bot = TwinVoiceBot()
 app = fp.make_app(bot, allow_without_key=True)
 
-# 405 Method Not Allowed ပြဿနာကို ဖြေရှင်းရန် Handler
+# 405 Method Not Allowed ပြဿနာကို ဖြေရှင်းရန် Health Check Handler
 @app.head("/")
 @app.get("/")
 async def health_check():
-    return Response("Bot is running perfectly!", status_code=200)
+    return Response("TwinVoice Bot is running on Gemini 2.0 Flash!", status_code=200)
