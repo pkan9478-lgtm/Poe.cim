@@ -3,7 +3,7 @@ import json
 import fastapi_poe as fp
 import google.generativeai as genai
 
-GEMINI_API_KEY = os.environ.get("AIzaSyC4n9LKe84mvm3R-jtYWuXWe_aXNECT5ek")
+GEMINI_API_KEY = os.environ.get("AIzaSyARef_w8xOClcWb85nB4A67PyuMAzkaH3U")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
