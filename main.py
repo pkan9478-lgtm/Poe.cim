@@ -59,7 +59,7 @@ class TwinVoiceBot(fp.PoeBot):
                 yield fp.PartialResponse(text="⚠️ AI သည် အကြောင်းအရာကို နားလည်သော်လည်း အဖြေထုတ်ရန် ငြင်းဆိုထားပါသည်။")
 
         except Exception as e:
-            yield fp.PartialResstem Error: {str(e)}")
+            yield fp.PartialResponse(text=f"⚠️ System Error: {str(e)}")
 
     async def get_settings(self, setting: fp.SettingsRequest) -> fp.SettingsResponse:
         return fp.SettingsResponse(server_bot_dependencies={})
