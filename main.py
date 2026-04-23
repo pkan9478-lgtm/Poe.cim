@@ -1,10 +1,11 @@
-import os
+import os  # စာလုံးအသေးဖြင့် ပြင်ထားသည်
 import json
 import fastapi_poe as fp
 import google.generativeai as genai
 
-# Render ထဲက Variable ကို တိုက်ရိုက်ဆွဲယူခြင်း
-RAW_API_KEY = os.environ.get("AIzaSyBzxxQRB9lTRuN_XOOFAQQhXVKXroVWwlY")
+# Render ထဲက Environment Variable နာမည်ကိုသာ ခေါ်ယူရပါမည်
+# Key အစစ်ကို Render Dashboard > Environment ထဲမှာ GEMINI_API_KEY ဆိုတဲ့ နာမည်နဲ့ ထည့်ပေးပါ
+RAW_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 class TwinVoiceBot(fp.PoeBot):
     async def get_response(self, request: fp.QueryRequest):
@@ -36,21 +37,24 @@ class TwinVoiceBot(fp.PoeBot):
                 model = genai.GenerativeModel(m_name)
                 
                 # Safety Settings လျှော့ချခြင်း
-                safety = [{"category": c, "threshold": "BLOCK_NONE"} for c in [
-                    "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_HARASSMENT", 
-                    "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_DANGEROUS_CONTENT"
-                ]]
+                safety = [
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+                ]
 
                 response = model.generate_content(prompt, safety_settings=safety)
                 if response.text:
                     yield fp.PartialResponse(text=response.text)
                     success = True
                     break
-            except:
+            except Exception as e:
+                # Error ဖြစ်လျှင် နောက် Model တစ်ခုသို့ ဆက်သွားမည်
                 continue
 
         if not success:
-            yield fp.PartialResponse(text="⚠️ အခုလောလောဆယ် AI Engine များ အလုပ်မလုပ်ပါ။ ခဏအကြာမှ ပြန်စမ်းပေးပါ။")
+            yield fp.PartialResponse(text="⚠️ အခုလောလောဆယ် AI Engines အားလုံး Limit ပြည့်နေပါသည်။ ခဏအကြာမှ ပြန်စမ်းပေးပါ။")
 
 bot = TwinVoiceBot()
 app = fp.make_app(bot, allow_without_key=True)
