@@ -1,44 +1,34 @@
 import os
 import json
+import fastapi_poe as fp
 import google.generativeai as genai
-from flask import Flask, request, jsonify
 
-app = Flask(__name__)
-
-# Render ရဲ့ လုံခြုံသော နေရာမှ API Key ကို ဆွဲယူခြင်း
+# ၁။ Gemini API ချိတ်ဆက်ခြင်း
 GEMINI_API_KEY = os.environ.get("AIzaSyC4n9LKe84mvm3R-jtYWuXWe_aXNECT5ek")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# GitHub တွင် တိုက်ရိုက်တင်ထားမည့် Voice DNA ဖိုင်ကို ဖတ်ခြင်း
-JSON_PATH = 'voice_map_summary.json'
-
-if os.path.exists(JSON_PATH):
-    with open(JSON_PATH, 'r') as f:
+# ၂။ Voice DNA ကို ဖတ်ခြင်း
+try:
+    with open('voice_map_summary.json', 'r') as f:
         voice_dna = json.load(f)
-else:
-    voice_dna = {"traits": "Natural, human-like, authentic tone."}
+except Exception:
+    voice_dna = {"traits": "Natural, human-like, flowing text"}
 
-@app.route("/", methods=["POST"])
-def poe_handler():
-    try:
-        data = request.json
-        user_message = data['query'][-1]['content']
-        
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"""
-        Using the following Voice Style DNA:
-        {json.dumps(voice_dna)}
-        
-        Rewrite this text to be 100% human-like. Only output the rewritten text.
-        Text to rewrite: {user_message}
-        """
-        response = model.generate_content(prompt)
-        return jsonify({"text": response.text})
-    except Exception as e:
-        return jsonify({"text": f"Error: {str(e)}"})
+# ၃။ Poe ၏ Official Protocol ဖြင့် Bot တည်ဆောက်ခြင်း
+class TwinVoiceBot(fp.PoeBot):
+    async def get_response(self, request: fp.QueryRequest):
+        user_message = request.query[-1].content
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"Using this Voice Style DNA: {json.dumps(voice_dna)}, rewrite this text to be 100% human-like. Only output the rewritten text: {user_message}"
+            
+            response = model.generate_content(prompt)
+            # Poe နားလည်သော Streaming စနစ်ဖြင့် ပြန်ပို့ခြင်း
+            yield fp.PartialResponse(text=response.text)
+        except Exception as e:
+            yield fp.PartialResponse(text=f"Error: {str(e)}")
 
-# Render အတွက် Port ကို အလိုအလျောက် သတ်မှတ်ခြင်း
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+# ၄။ ဆာဗာ အသက်သွင်းခြင်း
+bot = TwinVoiceBot()
+app = fp.make_app(bot, allow_without_key=True)
