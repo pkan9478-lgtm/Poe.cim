@@ -1,0 +1,84 @@
+{
+  "sample_stats": {
+    "sentence_count": 6,
+    "word_count": 110,
+    "avg_sentence_length": 18.33,
+    "sentence_lengths": [
+      4,
+      13,
+      20,
+      24,
+      27,
+      22
+    ],
+    "punctuation": {
+      ",": 7,
+      ";": 1,
+      ":": 0,
+      "!": 0,
+      "?": 0,
+      "\"": 2,
+      "-": 1,
+      "(": 0,
+      ")": 0
+    },
+    "top_words": [
+      [
+        "losing",
+        2
+      ],
+      [
+        "it's",
+        2
+      ],
+      [
+        "look",
+        1
+      ],
+      [
+        "get",
+        1
+      ],
+      [
+        "technology",
+        1
+      ],
+      [
+        "moving",
+        1
+      ],
+      [
+        "fast",
+        1
+      ],
+      [
+        "honestly",
+        1
+      ],
+      [
+        "bit",
+        1
+      ],
+      [
+        "overwhelming",
+        1
+      ],
+      [
+        "sometimes",
+        1
+      ],
+      [
+        "trying",
+        1
+      ]
+    ]
+  },
+  "dominant_traits": [
+    "Conversational opening and direct reader address",
+    "Mix of medium and long sentences with rhythmic variation",
+    "Prefers warm, reflective, slightly informal professional tone",
+    "Uses contrast between human authenticity and robotic polish",
+    "Leans on phrases that sound spoken rather than corporate"
+  ],
+  "rewrite_method": "Hybrid voice adaptation with selective structural preservation"
+}
